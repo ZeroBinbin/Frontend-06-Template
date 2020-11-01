@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tic-Tac-Toe</title>
+    <style>
+        .cell {
+            width: 100px;
+            height: 100px;
+            display: inline-block;
+            background-color: #b86323;
+            border: 1px solid #fff;
+            vertical-align: middle;
+            line-height: 100px;
+            font-size: 50px;
+            text-align: center;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div id="board"></div>
+</body>
+<script>
+    const width = 3, height = 3, num = 3;
+    let partten = new Array(width * height).fill(0);
+
+    let color = 1;
+
+    function show() {
+        const board = document.querySelector("#board");
+
+        board.innerHTML = "";
+        for (let i = 0; i < height; i++) {
+            for (let j = 0; j < width; j++) {
+                const cell = document.createElement("div");
+                cell.classList.add("cell");
+                cell.innerHTML =
+                    partten[i * width + j] === 1
+                        ? "⚫"
+                        : partten[i * width + j] === 2
+                        ? "⚪"
+                        : "";
+                board.appendChild(cell);
+                cell.addEventListener("click", () => userMove(i, j));
+            }
+            board.appendChild(document.createElement("br"));
+        }
+        if (check(partten, color)) {
+            alert(color === 2 ?  "白子胜利" : "黑子胜利")
+        }
+    }
+
+    show();
+
+    function userMove(x, y) {
+        if (partten[x * width + y]) {
+            return;
+        }
+        partten[x * width + y] = color;
+        show();
+        color = 3 - color;
+        computerMove();
+    }
+
+    function computerMove() {
+        let choice = bestChoice(partten, color);
+        if (choice.point) {
+            partten[choice.point[1] * width + choice.point[0]] = color;
+        }
+        show();
+        color = 3 - color;
+    }
+
+    function check(partten, color) {
+        {
+            for (let i = 0; i < width; i++) {
+                let count = 0;
+                for (let j = 0; j < height; j++) {
+                    if (partten[j * width + i] === color) {
+                        count++
+                    } else {
+                        count = 0
+                    }
+                    if (count >= num) return true;
+                }
+            }
+        }
+        {
+            for (let j = 0; j < height; j++) {
+                let count = 0;
+                for (let i = 0; i < width; i++) {
+                    if (partten[j * width + i] === color) {
+                        count++
+                    } else {
+                        count = 0;
+                    }
+                    if (count >= num) return true;
+                }
+            }
+        }
+        if (width < num || height < num) return;
+        {
+            for (let i = 0; i <= width - num; i++) {
+                let count = 0;
+                for (let j = 0; j < Math.min(width - num, height); j++) {
+                    if (partten[j * width + i + j] === color) {
+                        count++
+                    } else {
+                        count = 0;
+                    }
+                    if (count >= num) return true;
+                }
+            }
+        }
+        {
+            for (let j = 0; j <= height - num; j++) {
+                let count = 0;
+                for (let i = 0; i < Math.min(height, width); i++) {
+                    if (partten[(j + i) * width + i] === color) {
+                        count++
+                    } else {
+                        count = 0;
+                    }
+                    if (count >= num) return true;
+                }
+            }
+        }
+        {
+            for (let i = num - 1; i < width; i++) {
+                let count = 0;
+                for (let j = 0; j < Math.min(height, i + 1); j++) {
+                    if (partten[j * width + i - j] === color) {
+                        count++
+                    } else {
+                        count = 0;
+                    }
+                    if (count >= num) return true;
+                }
+            }
+        }
+        {
+            for (let j = 0; j <= height - num; j++) {
+                let count = 0;
+                for (let i = width - 1; i >= Math.max(width - (height - j), 0); i--) {
+                    if (partten[(j + width - 1 - i) * width + i] === color) {
+                        count++
+                    } else {
+                        count = 0;
+                    }
+                    if (count >= num) return true;
+                }
+            }
+        }
+    }
+
+    function clone(partten) {
+        return Object.create(partten);
+    }
+
+    function willWin(partten, color) {
+        for (let i = 0; i < width; i++) {
+            for (let j = 0; j < height; j++) {
+                if (partten[i * width + j]) {
+                    continue;
+                }
+                let tmp = clone(partten);
+                tmp[i * width + j] = color;
+                if (check(tmp, color)) {
+                    return [j, i];
+                }
+            }
+        }
+        return null;
+    }
+
+    function bestChoice(partten, color) {
+        let p;
+        if ((p = willWin(partten, color))) {
+            return {
+                result: 1,
+                point: p,
+            };
+        }
+
+        let result = -2;
+        let point = null;
+        for (let i = 0; i < width; i++) {
+            for (let j = 0; j < height; j++) {
+                if (partten[i * width + j]) {
+                    continue;
+                }
+                let tmp = clone(partten);
+                tmp[i * width + j] = color;
+
+                let r = bestChoice(tmp, 3 - color).result;
+
+                if (-r > result) {
+                    result = -r;
+                    point = [j, i];
+                }
+            }
+        }
+        return {
+            result: point ? result : 0,
+            point: point,
+        };
+    }
+</script>
+</html>
